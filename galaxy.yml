@@ -1,0 +1,19 @@
+namespace: "netactuate"
+name: "compute"
+version: "1.0.0"
+readme: "README.md"
+authors:
+ - "Dennis Durling"
+ - "Josh McBeth"
+description: "NetActuate Compute Collection, Ansible interface for cloud compute provisioning API"
+license:
+ - "GPL-2.0-only"
+tags:
+ - netactuate
+ - cloud
+ - compute
+ - build
+ - terminate
+ - running
+ - stopped
+repository: "https://github.com/netactuate/ansible-collection-compute"

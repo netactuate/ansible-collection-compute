@@ -80,8 +80,8 @@ This is the minimum you need in a playbook to ensure running state for the speci
       connection: local
 
       tasks:
-      - name: Ensure na_compute_node is running
-        na_compute_node:
+      - name: Ensure netactuate.compute.node is running
+        netactuate.compute.node:
           auth_token: <api key from portal>
           hostname: <node hostname>
           ssh_public_key: <ssh public key content>
@@ -106,8 +106,8 @@ This is a a more complete example exhibiting dynamic inventory enrollment.
           - { hostname: node2.example.com, ssh_public_key: keys.pub, operating_system: 'Debian 9.8 x64 (HVM/PV)', location: 'RDU - Raleigh, NC', plan: 'VR1x1x25', mbpkgid: '<PKGID GOES HERE>' }
 
       tasks:
-      - name: Ensure na_compute_node is in the requested state
-        na_compute_node:
+      - name: Ensure netactuate.compute.node is in the requested state
+        netactuate.compute.node:
           hostname: "{{ item.hostname }}"
           ssh_public_key: "{{ item.ssh_public_key }}"
           operating_system: "{{ item.operating_system }}"

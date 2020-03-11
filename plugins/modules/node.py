@@ -258,7 +258,7 @@ class NetActuateComputeState(object):
         device_data = {}
         device_data['id'] = self.node.uuid
         device_data['hostname'] = self.node.name
-        device_data['state'] = self.node.state
+        device_data['state'] = self.node.state.name.lower()
         device_data['ip_addresses'] = []
         for addr in self.node.public_ips:
             device_data['ip_addresses'].append(

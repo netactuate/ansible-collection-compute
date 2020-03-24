@@ -7,23 +7,12 @@ Requirements
 ------------
 
   * Ansible >= 2.9.0
-  * libcloud == 2.3.0
+  * naapi == 0.1.3
 
 Installation
 ------------
 
-First, you should install libcloud if it is not already installed.  This can be done as follows.
-
-For RedHat derivative (note package name may be distribution version dependent):
-
-    yum install python36-libcloud
-
-For Debian derivative:
-
-    apt install libcloud
-
-Finally:
-
+    pip install naapi>=0.1.3 ansible>=2.9.0
     ansible-galaxy collection install netactuate.compute
 
 

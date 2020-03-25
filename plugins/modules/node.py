@@ -344,6 +344,11 @@ class NetActuateComputeState:
         """
         node = None
 
+        # return early if we can't specify an mbpkgid
+        if self.mbpkgid is None:
+            return node
+
+        # we have an mbpkgid so this call will work now so use it
         try:
             node = self.conn.servers(mbpkgid=self.mbpkgid).json()
         except Exception:
@@ -352,12 +357,12 @@ class NetActuateComputeState:
             pass
         return node
 
-    def _get_job(self, job_id=None):
+    def _get_job(self, mbpkgid=None, job_id=None):
         """Get a specific job's status from the api"""
         result = {}
-        if self.mbpkgid is not None and job_id is not None:
+        if mbpkgid is not None and job_id is not None:
             try:
-                result = self.conn.get_job(self.mbpkgid, job_id).json()
+                result = self.conn.get_job(mbpkgid, job_id).json()
             except Exception as e:
                 self.module.fail_json(
                     msg="Failed to get job status for node {}, job_id {} "
@@ -403,8 +408,15 @@ class NetActuateComputeState:
         try:
             # get the job id from the result
             job_id = result.get('id', None)
+            # only time the 'id' isn't in the result is for build
+            # in that case the job dict is in the main dict under
+            # key 'build'
             if job_id is None:
+
+                # try the build key
                 build = result.get('build', None)
+
+                # if no build key, then fail
                 if build is None:
                     self.module.fail_json(
                         msg=(
@@ -413,6 +425,9 @@ class NetActuateComputeState:
                     )
                 else:
                     job_id = build['id']
+                    # given where we got this from, we probably don't have
+                    # an mbpkgid, get it from the outter result
+                    self.mbpkgid = result['mbpkgid']
 
             # now get the mbpkgid or we can't do anything
             mbpkgid = self.mbpkgid
@@ -424,6 +439,7 @@ class NetActuateComputeState:
                         msg=(
                             "Cannot check job status, not enough information "
                             "No mbpkgid or no job_id or neither found"
+                            "Result is: ******{0}".format(result)
                         )
                     )
 
@@ -431,7 +447,7 @@ class NetActuateComputeState:
             status = None
             # loop through range/interval (timeout) until we get status == 5
             for _ in range(0, timeout, int(interval)):
-                status = self.conn.get_job(mbpkgid, job_id).json()
+                status = self._get_job(mbpkgid, job_id)
                 if status and status['status'] == '5':
                     break
                 time.sleep(interval)
@@ -451,7 +467,7 @@ class NetActuateComputeState:
                 self.wait_for_state(state)
         except Exception as e:
             self.module.fail_json(
-                msg="wait_for_job_complted failed: {0}".format(str(e))
+                msg="wait_for_job_completed failed: {0}".format(str(e))
             )
 
     def build_node(self):
@@ -591,15 +607,13 @@ class NetActuateComputeState:
             # build_node will set changed to True after it installs it
             self.build_node()
 
-    def ensure_node_terminated(self, cancel_billing=False):
+    def ensure_node_terminated(self, cancel_billing=True):
         """Calls the api endpoint to delete the node and returns the result"""
         extra_params = {
             'cancel_billing': cancel_billing,
         }
-        print('calling delete')
-
         try:
-            result = self.conn.delete(self.mbpkgid, extra_params).json()
+            result = self.conn.delete(self.mbpkgid, extra_params=extra_params).json()
         except Exception as e:
             self.module.fail_json(
                 msg="Failed to delete node for node {0} with: {1}"

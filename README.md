@@ -7,12 +7,12 @@ Requirements
 ------------
 
   * Ansible >= 2.9.0
-  * naapi == 0.1.3
+  * naapi == 0.1.4
 
 Installation
 ------------
 
-    pip install naapi>=0.1.3 ansible>=2.9.0
+    pip install naapi==0.1.4 ansible>=2.9.0
     ansible-galaxy collection install netactuate.compute
 
 

@@ -1,6 +1,6 @@
 namespace: "netactuate"
 name: "compute"
-version: "1.0.4"
+version: "1.0.5"
 readme: "README.md"
 authors:
  - "Dennis Durling"

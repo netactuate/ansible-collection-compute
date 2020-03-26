@@ -6,7 +6,7 @@ This repository contains the netactuate.compute.node module.  The netactuate.com
 Requirements
 ------------
 
-  * Ansible >= 2.9.0
+  * Ansible >= 2.8.0
   * naapi == 0.1.4
 
 Installation

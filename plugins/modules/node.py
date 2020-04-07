@@ -442,13 +442,14 @@ class NetActuateComputeState:
                             "Result is: ******{0}".format(result)
                         )
                     )
-
             # we got what we need (mbpkgid, job_id)
             status = None
             # loop through range/interval (timeout) until we get status == 5
             for _ in range(0, timeout, int(interval)):
                 status = self._get_job(mbpkgid, job_id)
-                if status and status['status'] == '5':
+                # break on 5, 6 or 7 so we don't wait forever to find out it failed.
+                # since they never change from these states
+                if status and status['status'] in ['5', '6', '7']:
                     break
                 time.sleep(interval)
 

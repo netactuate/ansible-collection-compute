@@ -251,14 +251,13 @@ class NetActuateComputeState:
                     "Error was: {1}"
                 ).format(self.hostname, str(e))
             )
-        if not key:
-            self.module.fail_json(
-                msg=(
-                    "ssh_public_key file for {0} is empty."
-                ).format(self.hostname)
-            )
-            return None
-        return key
+        if key:
+            return key
+        self.module.fail_json(
+            msg=(
+                "ssh_public_key file for {0} is empty."
+            ).format(self.hostname)
+        )
 
     def _serialize_node(self):
         """Returns a json object describing the node as shown in RETURN doc

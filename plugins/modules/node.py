@@ -244,7 +244,6 @@ class NetActuateComputeState:
         """
         try:
             key = open(self.ssh_key_file).read()
-            return key
         except OSError as e:
             self.module.fail_json(
                 msg=(
@@ -252,6 +251,14 @@ class NetActuateComputeState:
                     "Error was: {1}"
                 ).format(self.hostname, str(e))
             )
+        if not key:
+            self.module.fail_json(
+                msg=(
+                    "ssh_public_key file for {0} is empty."
+                ).format(self.hostname)
+            )
+            return None
+        return key
 
     def _serialize_node(self):
         """Returns a json object describing the node as shown in RETURN doc

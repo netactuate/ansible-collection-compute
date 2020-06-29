@@ -186,6 +186,10 @@ class NetActuateComputeState:
 
     def _sorted_locations(self):
         locations = self.conn.locations().json()
+        if 'error' in locations:
+            if 'msg' in locations:
+                self.module.fail_json(msg=("API error: {0}").format(avail_nodes['msg']))
+
         return sorted(locations, key=lambda x: int(x['id']))
 
 
@@ -198,13 +202,17 @@ class NetActuateComputeState:
         """
         # .servers() returns a list of dicts
         avail_nodes = self.conn.servers().json()
+        # ... except when it returns an error as a dict
+        if 'error' in avail_nodes:
+            if 'msg' in avail_nodes and not 'Precondition Failed: No servers found' in avail_nodes['msg']:
+                self.module.fail_json(msg=("API error: {0}").format(avail_nodes['msg']))
 
         mbpkgid = None
 
         for node in avail_nodes:
             # if node['status'].lower() == 'terminated':
             #     continue
-            if node['fqdn'] == self.hostname:
+            if 'fqdn' in node and node['fqdn'] == self.hostname:
                 if mbpkgid is not None:
                     self.module.fail_json(
                         msg=(

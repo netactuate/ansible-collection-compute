@@ -224,6 +224,15 @@ class NetActuateComputeState:
                     break
                 mbpkgid = node['mbpkgid']
 
+        # look up uninstalled package by mbpkgid
+        if mbpkgid is None and self.mbpkgid is not None:
+            avail_packages = self.conn.packages().json()
+            if 'error' in avail_packages:
+                self.module.fail_json(msg=("API error: {0}").format(avail_packages['msg']))
+            for package in avail_packages:
+                if 'mbpkgid' in package and package['mbpkgid'] == self.mbpkgid:
+                    mbpkgid = package['mbpkgid']
+
         if self.mbpkgid is not None and mbpkgid != self.mbpkgid:
             self.module.fail_json(
                 msg=(
@@ -321,7 +330,7 @@ class NetActuateComputeState:
         location = None
         loc_possible_list = [
             loc for loc in self.avail_locs
-            if self.loc_arg in [loc['name'], loc['id']]
+            if self.loc_arg.lower() in [ x.lower() for x in [ loc['name'], loc['name'].split(' - ')[0], loc['id']] ]
         ]
 
         if not loc_possible_list:
@@ -493,9 +502,8 @@ class NetActuateComputeState:
         """
         try:
             # set up params to build the node
-            if self.node is None:
-                # no node exists yet
-                # probably no mbpkgid exists either
+            if self.node is None or self.node['status'].lower() == 'terminated':
+                # no node exists yet or node is terminated
                 params = {
                     'mbpkgid': self.mbpkgid,
                     'image': self.image['id'],
@@ -723,6 +731,9 @@ def main():
             contract_id=dict(required=False),
             unique=dict(default=True),
         ),
+        required_if=[
+            ( 'package_billing', 'usage', ('contract_id',) )
+        ]
     )
 
     # don't proceed without authentication...

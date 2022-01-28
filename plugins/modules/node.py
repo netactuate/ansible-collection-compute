@@ -1,10 +1,37 @@
-'''
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+#
+# (c) 2018, Dennis Durling <djdtahoe@gmail.com>
+# GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+from __future__ import absolute_import, division, print_function
+import time
+import os
+import re
+from ansible.module_utils.basic import AnsibleModule
+try:
+    from naapi.api import NetActuateNodeDriver
+    HAS_NAAPI = True
+except ImportError:
+    HAS_NAAPI = False
+
+# this is so class Foo: becomes a new style class in py2 also
+# pylint: disable=invalid-name
+__metaclass__ = type
+
+
+ANSIBLE_METADATA = {
+    'metadata_version': '1.1',
+    'status': ['preview'],
+    'supported_by': 'community'
+}
+
+DOCUMENTATION = '''
 module: node
 short_description: Manage virtual machines on NetActuate infrastructure.
 description:
   - Deploy newly purchaced packages.
   - Build, destroy, start and stop previously built packages.
-version_added: "2.6.0"
 author: "Dennis Durling (@tahoe)"
 options:
   auth_token:
@@ -45,33 +72,6 @@ options:
       - Required.
       - Note, Currently once this is set it cannot be changed from ansible.
 '''
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-#
-# (c) 2018, Dennis Durling <djdtahoe@gmail.com>
-# GNU General Public License v3.0+
-# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
-from __future__ import absolute_import, division, print_function
-import time
-import os
-import re
-from ansible.module_utils.basic import AnsibleModule
-try:
-    from naapi.api import NetActuateNodeDriver
-    HAS_NAAPI = True
-except ImportError:
-    HAS_NAAPI = False
-
-# this is so class Foo: becomes a new style class in py2 also
-# pylint: disable=invalid-name
-__metaclass__ = type
-
-
-ANSIBLE_METADATA = {
-    'metadata_version': '1.1',
-    'status': ['preview'],
-    'supported_by': 'community'
-}
 
 EXAMPLES = '''
 - name: Running

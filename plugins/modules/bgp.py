@@ -1,29 +1,3 @@
-'''
-module: bgp
-short_description: Manage virtual machines on NetActuate infrastructure.
-description:
-  - Retrieve BGP session information for NetActuate nodes
-version_added: "2.6.0"
-author: "Dennis Durling (@tahoe)"
-options:
-  auth_token:
-    description:
-      - API Key which should be set in ENV variable HOSTVIRTUAL_API_KEY
-      - C(auth_token) is required.
-  hostname:
-    description:
-      - Hostname of the node. C(name) can only be a valid hostname.
-      - Either C(name) is required.
-  name:
-    description:
-      - Custom display name of the instances.
-      - Host name will be set to C(name) if not specified.
-      - Either C(name) or C(hostname) is required.
-  mbpkgid:
-    description:
-      - The purchased package ID the node is associated with.
-      - Required as purchasing new nodes is not yet available here.
-'''
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 #
@@ -56,6 +30,33 @@ ANSIBLE_METADATA = {
     'status': ['preview'],
     'supported_by': 'community'
 }
+
+DOCUMENTATION = '''
+module: bgp
+short_description: Manage virtual machines on NetActuate infrastructure.
+description:
+  - Retrieve BGP session information for NetActuate nodes
+version_added: "1.1.0"
+author: "Dennis Durling (@tahoe)"
+options:
+  auth_token:
+    description:
+      - API Key which should be set in ENV variable HOSTVIRTUAL_API_KEY
+      - C(auth_token) is required.
+  hostname:
+    description:
+      - Hostname of the node. C(name) can only be a valid hostname.
+      - Either C(name) is required.
+  name:
+    description:
+      - Custom display name of the instances.
+      - Host name will be set to C(name) if not specified.
+      - Either C(name) or C(hostname) is required.
+  mbpkgid:
+    description:
+      - The purchased package ID the node is associated with.
+      - Required as purchasing new nodes is not yet available here.
+'''
 
 EXAMPLES = '''
 - name: Retrieve session configuration

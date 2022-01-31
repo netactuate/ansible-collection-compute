@@ -1,7 +1,7 @@
-NetActuate Compute Node
+NetActuate Compute Collection
 =========
 
-This repository contains the netactuate.compute.node module.  The netactuate.compute.node module allows for automation of provisioning, de-provisioning, startup and shutdown tasks of compute nodes.
+This repository contains the netactuate.compute collection, including the "node" and "bgp" modules.  The netactuate.compute.node module allows for automation of provisioning, de-provisioning, startup and shutdown tasks of compute nodes.  The netactuate.compute.bgp module allows for provisioning of BGP sessions and programmatic retrieval of session configuration details.
 
 Requirements
 ------------
@@ -15,6 +15,9 @@ Installation
     pip install naapi>=0.1.7 ansible>=2.8.0
     ansible-galaxy collection install netactuate.compute
 
+
+Node Module
+=========
 
 Variables
 ---------
@@ -150,7 +153,93 @@ This is a a more complete example exhibiting dynamic inventory enrollment.
         apt: name=htop state=present
 
 
-License
+BGP Module
+=========
+
+Variables
+---------
+
+List of required Role or Host variables
+
+    auth_token:
+      API key from settings page on portal.
+      This can also be set in the environment variable HOSTVIRTUAL_API_KEY.
+      If both are set, the module parameter takes precedence over the environment variable.
+    hostname:
+      Hostname of the node for which to provision sessions and/or retrieve session configuration details.
+    mbpkgid:
+      The purchased package ID the node is associated with. Optional if hostname is already a unique identifier.
+    build:
+      Request provisioning of sessions to fulfil requirements as defined by parameters.
+    ipv6:
+      Request IPv6 sessions in addition to IPv4 (default=True).
+    redundant:
+      Request two sessions be provisioned for redundancy (default=False).
+    group_id:
+      The unique NetActuate-provided BGP group identifier with which to associate requested sessions.
+
+Example
 -------
+
+Assuming an inventory.txt containing the following:
+
+    [master]
+    localhost ansible_connection=local ansible_python_interpreter=python
+
+    [nodes]
+    node01.example.com
+    node02.example.com
+
+This is the minimum you need in a playbook to request BGP sessions for specified nodes.
+
+    ---
+    - name: BGP
+      hosts: nodes
+      gather_facts: no
+      serial: 1
+
+      tasks:
+      - name: Provision peering
+        netactuate.compute.bgp:
+          auth_token: <api key from portal>
+          hostname: "{{ inventory_hostname }}"
+          build: true
+          group_id: <bgp group id>
+        delegate_to: localhost
+        register: na
+
+Peering information is included in the return dictionary for further use.
+
+Return
+------
+
+On successful execution, the return dictionary will include a "device" key containing information needed to configure the retrieved or newly provisioned sesssions, for example:
+
+    "device": {
+        "bgp_peers": {
+            "IPv4": [
+                "192.0.2.1",
+                "192.0.2.2"
+            ],
+            "IPv6": [
+                "2001:db8:100::1",
+                "2001:db8:100::2"
+            ],
+            "group_id": "1111",
+            "localasn": "65001",
+            "localpeerv4": "192.0.2.100",
+            "localpeerv6": "2001:db8:100::1000",
+            "peerasn": "65000"
+        },
+        "hostname": "node01.example.com",
+        "id": "2222",
+        "public_ipv4": "192.0.2.100",
+        "public_ipv6": "2001:db8:100::1000",
+        "state": "running"
+    }
+
+
+License
+=========
 
 GPLv2

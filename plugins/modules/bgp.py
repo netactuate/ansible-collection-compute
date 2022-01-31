@@ -45,17 +45,25 @@ options:
       - C(auth_token) is required.
   hostname:
     description:
-      - Hostname of the node. C(name) can only be a valid hostname.
-      - Either C(name) is required.
-  name:
-    description:
-      - Custom display name of the instances.
-      - Host name will be set to C(name) if not specified.
-      - Either C(name) or C(hostname) is required.
+      - Hostname of the node for which to provision sessions and/or retrieve session configuration details.
   mbpkgid:
     description:
-      - The purchased package ID the node is associated with.
-      - Required as purchasing new nodes is not yet available here.
+      - The purchased package ID the node is associated with. Optional if C(hostname) is a unique identifier.
+  build:
+    description:
+      - Request provisioning of sessions to fulfil requirements as defined by parameters.
+    default: False
+  ipv6:
+    description:
+      - Request IPv6 sessions in addition to IPv4.
+    default: True
+  redundant:
+    description:
+      - Request two sessions be provisioned for redundancy.
+    default: False
+  group_id:
+    description:
+      - The unique NetActuate-provided BGP group identifier with which to associate requested sessions.
 '''
 
 EXAMPLES = '''

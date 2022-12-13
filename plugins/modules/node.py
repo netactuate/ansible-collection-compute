@@ -10,7 +10,7 @@ import os
 import re
 from ansible.module_utils.basic import AnsibleModule
 try:
-    from naapi.api import NetActuateNodeDriver
+    from naapi.api import NetActuateNodeDriver, NetActuateException
     HAS_NAAPI = True
 except ImportError:
     HAS_NAAPI = False
@@ -222,16 +222,15 @@ class NetActuateComputeState:
                         )
                     )
                     break
-                mbpkgid = node['mbpkgid']
+                mbpkgid = str(node['mbpkgid'])
 
         # look up uninstalled package by mbpkgid
         if mbpkgid is None and self.mbpkgid is not None:
-            avail_packages = self.conn.packages().json()
-            if 'error' in avail_packages:
-                self.module.fail_json(msg=("API error: {0}").format(avail_packages['msg']))
-            for package in avail_packages:
-                if 'mbpkgid' in package and package['mbpkgid'] == self.mbpkgid:
-                    mbpkgid = package['mbpkgid']
+            package = self.conn.packages(self.mbpkgid).json()
+            if 'error' in package:
+                self.module.fail_json(msg=("API error: {0}").format(package['msg']))
+            else:
+                mbpkgid = str(package['mbpkgid'])
 
         if self.mbpkgid is not None and mbpkgid != self.mbpkgid:
             self.module.fail_json(
@@ -330,7 +329,7 @@ class NetActuateComputeState:
         location = None
         loc_possible_list = [
             loc for loc in self.avail_locs
-            if self.loc_arg.lower() in [ x.lower() for x in [ loc['name'], loc['name'].split(' - ')[0], loc['id']] ]
+            if self.loc_arg.lower() in [ x.lower() for x in [ loc['name'], loc['name'].split(' - ')[0], str(loc['id'])] ]
         ]
 
         if not loc_possible_list:
@@ -386,6 +385,11 @@ class NetActuateComputeState:
         if mbpkgid is not None and job_id is not None:
             try:
                 result = self.conn.get_job(mbpkgid, job_id).json()
+            except NetActuateException as apiEx:
+                self.module.fail_json(
+                    msg="Failed to get job status for node {}, job_id {} "
+                    "with API error: {}".format(self.hostname, job_id, str(apiEx))
+                )
             except Exception as e:
                 self.module.fail_json(
                     msg="Failed to get job status for node {}, job_id {} "
@@ -430,29 +434,20 @@ class NetActuateComputeState:
 
         try:
             # get the job id from the result
-            job_id = result.get('id', None)
-            # only time the 'id' isn't in the result is for build
-            # in that case the job dict is in the main dict under
-            # key 'build'
+            job_id = result.get('build', None)
             if job_id is None:
+                self.module.fail_json(
+                    msg=(
+                        "Failed to get job_id for node {0} from result {1}"
+                    ).format(self.hostname, result)
+                )
 
-                # try the build key
-                build = result.get('build', None)
+            # if the result includes an mbpkgid, this is our mbpkgid
+            build_mbpkgid = result.get('mbpkgid', None)
+            if build_mbpkgid:
+                self.mbpkgid = build_mbpkgid
 
-                # if no build key, then fail
-                if build is None:
-                    self.module.fail_json(
-                        msg=(
-                            "Failed to get job_id for node {0} from result {1}"
-                        ).format(self.hostname, result)
-                    )
-                else:
-                    job_id = build['id']
-                    # given where we got this from, we probably don't have
-                    # an mbpkgid, get it from the outter result
-                    self.mbpkgid = result['mbpkgid']
-
-            # now get the mbpkgid or we can't do anything
+            # otherwise, get the mbpkgid from the node definition
             mbpkgid = self.mbpkgid
             if mbpkgid is None:
                 if getattr(self, 'node', None) is not None:
@@ -469,15 +464,23 @@ class NetActuateComputeState:
             status = None
             # loop through range/interval (timeout) until we get status == 5
             for _ in range(0, timeout, int(interval)):
+                time.sleep(interval)
                 status = self._get_job(mbpkgid, job_id)
                 # break on 5, 6 or 7 so we don't wait forever to find out it failed.
                 # since they never change from these states
-                if status and status['status'] in ['5', '6', '7']:
-                    break
-                time.sleep(interval)
+                if status:
+                    if status['status'] in [5, 6, 7]:
+                        break
+                else:
+                    self.module.fail_json(
+                        msg=(
+                            "Failed to check job status for {0}, unexpected result: {1}"
+                        ).format(self.hostname, status)
+                    )
+
 
             # we've timed out, last check
-            if status is None or status['status'] != '5':
+            if status is None or status['status'] != 5:
                 # problem!
                 self.module.fail_json(
                     msg=(
@@ -513,7 +516,7 @@ class NetActuateComputeState:
                     'plan': self.plan,
                     'package_billing': self.package_billing,
                     'package_billing_contract_id': self.contract_id,
-                    'unique': self.unique
+                    'unique': self.unique,
                 }
             else:
                 # node exists

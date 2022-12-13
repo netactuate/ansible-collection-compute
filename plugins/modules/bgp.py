@@ -290,7 +290,8 @@ class NetActuateComputeBgp:
         device_data['bgp_peers'] = {}
         peers_v4 = []
         peers_v6 = []
-        for sess_info in sess_details:
+        for sess_id in sess_details:
+            sess_info = sess_details[sess_id]
             device_data['bgp_peers']['group_id'] = sess_info['group_id']
             device_data['bgp_peers']['localasn'] = sess_info['customer_asn']
             device_data['bgp_peers']['peerasn'] = sess_info['provider_asn']

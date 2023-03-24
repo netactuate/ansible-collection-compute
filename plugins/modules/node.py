@@ -464,13 +464,13 @@ class NetActuateComputeState:
             status = None
             # loop through range/interval (timeout) until we get status == 5
             for _ in range(0, timeout, int(interval)):
-                time.sleep(interval)
                 status = self._get_job(mbpkgid, job_id)
                 # break on 5, 6 or 7 so we don't wait forever to find out it failed.
                 # since they never change from these states
                 if status:
-                    if status['status'] in [5, 6, 7]:
+                    if 'status' in status and status['status'] in [5, 6, 7]:
                         break
+                    time.sleep(interval)
                 else:
                     self.module.fail_json(
                         msg=(

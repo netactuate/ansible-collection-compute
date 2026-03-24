@@ -167,6 +167,7 @@ class NetActuateComputeState:
         self.plan = self.module.params.get('plan')
         self.package_billing = self.module.params.get('package_billing')
         self.contract_id = self.module.params.get('contract_id')
+        self.extra_params = self.module.params.get('params') or {}
         self.ssh_key_file = self.module.params.get('ssh_public_key')
 
         # from internal methods, these use attributes or module, or both
@@ -531,6 +532,9 @@ class NetActuateComputeState:
                     'package_billing_contract_id': self.contract_id,
                     'unique': self.unique,
                 }
+
+            if self.extra_params:
+                params['params'] = self.extra_params
         except Exception as e:
             self.module.fail_json(
                 msg="build_node failed: {0}".format(str(e))
@@ -733,6 +737,7 @@ def main():
             package_billing=dict(default='usage'),
             contract_id=dict(required=False),
             unique=dict(default=True),
+            params=dict(required=False, type='dict'),
         ),
         required_if=[
             ( 'package_billing', 'usage', ('contract_id',) )

@@ -1,1 +1,16 @@
+---
 requires_ansible: ">=2.8.0"
+plugin_routing:
+  modules:
+    node:
+      deprecation:
+        warning_text: >-
+          netactuate.compute.node is deprecated and is no longer maintained.
+          Use netactuate.cloud.server from the netactuate.cloud collection.
+          See MIGRATION.md for the upgrade path.
+    bgp:
+      deprecation:
+        warning_text: >-
+          netactuate.compute.bgp is deprecated and is no longer maintained.
+          Use netactuate.cloud.bgp_session from the netactuate.cloud collection.
+          See MIGRATION.md for the upgrade path.

@@ -1,3 +1,17 @@
+> DEPRECATED
+>
+> The netactuate.compute collection is deprecated and no longer maintained. It
+> targets vAPI2 only and stopped in 2022. Use the netactuate.cloud collection,
+> which covers the full NetActuate cloud surface (compute, VPC, DNS, NKE,
+> storage, cloud routers, BGP, firewall and more) on the maintained NetActuate
+> Python SDK.
+>
+> - Install: ansible-galaxy collection install netactuate.cloud
+> - Migrating from netactuate.compute: see MIGRATION.md
+>
+> netactuate.compute.node    is replaced by netactuate.cloud.server
+> netactuate.compute.bgp     is replaced by netactuate.cloud.bgp_session
+
 NetActuate Compute Collection
 =========
 
